@@ -1,0 +1,5 @@
+outs:
+- md5: 43cbe1deded2eee307eb2da16064d611
+  size: 4955
+  hash: md5
+  path: fruits.csv
