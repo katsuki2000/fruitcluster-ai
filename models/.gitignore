@@ -1,2 +1,5 @@
 /model.pkl
 /scaler.pkl
+/kmeans.pkl
+/rf_proxy.pkl
+/metadata.json
