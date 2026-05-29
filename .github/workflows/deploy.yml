@@ -1,0 +1,101 @@
+name: CI/CD — Test + Deploy to HuggingFace Spaces
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # ── JOB 1 : Tests automatiques ────────────────────────────────
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt pytest
+
+      - name: Run tests
+        run: pytest tests/ -v --tb=short
+
+  # ── JOB 2 : Deploy sur HuggingFace (seulement sur push main) ──
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install huggingface_hub
+        run: pip install huggingface_hub
+
+      - name: Deploy to HuggingFace Spaces
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          HF_USER:  ${{ secrets.HF_USER }}
+        run: |
+          python << 'EOF'
+          import os
+          from huggingface_hub import HfApi
+
+          api        = HfApi()
+          hf_token   = os.environ["HF_TOKEN"]
+          hf_user    = os.environ["HF_USER"]
+          repo_id    = f"{hf_user}/fruitcluster-ai"
+
+          # Créer le Space si inexistant
+          api.create_repo(
+              repo_id=repo_id,
+              repo_type="space",
+              space_sdk="gradio",
+              exist_ok=True,
+              token=hf_token
+          )
+
+          # Fichiers à uploader
+          files = {
+              "app.py":               "app.py",
+              "requirements.txt":     "requirements.txt",
+              "models/kmeans.pkl":    "models/kmeans.pkl",
+              "models/scaler.pkl":    "models/scaler.pkl",
+              "models/rf_proxy.pkl":  "models/rf_proxy.pkl",
+              "models/metadata.json": "models/metadata.json",
+          }
+
+          for local, remote in files.items():
+              if os.path.exists(local):
+                  api.upload_file(
+                      path_or_fileobj=local,
+                      path_in_repo=remote,
+                      repo_id=repo_id,
+                      repo_type="space",
+                      token=hf_token
+                  )
+                  print(f"  OK {local}")
+              else:
+                  print(f"  MANQUANT {local}")
+
+          print(f"Deploy termine : https://huggingface.co/spaces/{repo_id}")
+          EOF
+
+      - name: Summary
+        env:
+          HF_USER: ${{ secrets.HF_USER }}
+        run: |
+          echo "### Deploy termine" >> $GITHUB_STEP_SUMMARY
+          echo "URL : https://huggingface.co/spaces/${HF_USER}/fruitcluster-ai" >> $GITHUB_STEP_SUMMARY
