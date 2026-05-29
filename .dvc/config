@@ -1,10 +1,7 @@
 [core]
-    remote = gdrive_remote
     autostage = true
-['remote "remote"']
-    url = gdrive://10Pe7yKAWwZlQGI4ExPt565YRFV6O
+    remote = local_remote
 ['remote "storage"']
     url = gdrive://10Pe7yKAWwZlQGI4ExPt565YRFV6O
-['remote "gdrive_remote"']
-    url = gdrive://10Pe7yKAWwZlQGI4ExPt565YRFV6O
-    gdrive_acknowledge_abuse = true
+['remote "local_remote"']
+    url = /content/drive/MyDrive/mldl/dvc_storage
