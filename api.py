@@ -54,7 +54,7 @@ def get_global_shap_plot():
     
     plt.figure(figsize=(6, 3.5))
     plt.barh(features, values, color=['#4C72B0', '#DD8452'], alpha=0.85, edgecolor='white')
-    plt.xlabel("|SHAP value| moyenne cumuler")
+    plt.xlabel("|SHAP value| moyenne cumulée")
     plt.title("Importance Globale des Variables (Modèle Proxy)")
     plt.grid(axis='x', alpha=0.3)
     plt.tight_layout()
