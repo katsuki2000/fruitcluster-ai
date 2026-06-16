@@ -1,0 +1,7 @@
+mlruns/
+mlflow.db
+reports/
+*.png
+.dvc/cache/
+data/fruits.csv
+models/rf_proxy.pkl
